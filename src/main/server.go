@@ -1,7 +1,7 @@
 package main
 
 import (
-	"conf"
+	"connector"
 	"fmt"
 )
 
@@ -11,6 +11,7 @@ const (
 )
 
 func main() {
-	b := conf.GetConf()
-	fmt.Println(b["test"].ServiceUri)
+	fmt.Println("main")
+	conn := connector.Connector{host, port}
+	conn.Run(host, port)
 }
