@@ -13,6 +13,6 @@ func GetConf() map[string]api {
 	var ApiConfig map[string]api
 	ApiConfig = make(map[string]api)
 
-	ApiConfig["test"] = api{"/service/test", impl.Test{}}
+	ApiConfig["/service/test"] = api{"/service/test", &impl.Test{"test"}}
 	return ApiConfig
 }

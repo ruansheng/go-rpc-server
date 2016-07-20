@@ -7,7 +7,7 @@ import (
 
 const (
 	host = "127.0.0.1"
-	port = 9999
+	port = 8080
 )
 
 func main() {

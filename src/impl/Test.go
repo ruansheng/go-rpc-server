@@ -5,6 +5,7 @@ import (
 )
 
 type Test struct {
+	Id string
 }
 
 func (test *Test) Show() {
