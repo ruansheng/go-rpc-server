@@ -1,8 +1,8 @@
 package entry
 
 type Response struct {
-	Id     string
-	En     int
-	Em     string
-	Result interface{}
+	Id     string      `json:"id"`
+	En     int         `json:"en"`
+	Em     string      `json:"em"`
+	Result interface{} `json:"result"`
 }

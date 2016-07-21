@@ -7,52 +7,39 @@ import (
 	"fmt"
 	"net"
 	"reflect"
-	"strconv"
+	//	"strconv"
 	"strings"
+	"utils"
 )
 
 func HandleConnection(conn *net.Conn) {
-	fmt.Println(conn)
 	defer (*conn).Close()
 	buf := make([]byte, 1024)
-	var cmd string
 	for {
 		n, err := (*conn).Read(buf)
 		if err == nil {
-			cmd = string(buf[:n])
-			var lines []string
-			fmt.Println(cmd)
-			lines = strings.Split(cmd, "\r\n")
-			fmt.Println(lines)
-			fmt.Println(len(lines))
-			if len(lines) == 6 { // get command
+			lines := utils.ParseProtocal(string(buf[:n]))
+			if len(lines) == 4 && strings.EqualFold(lines[2], "PING") { // ping command
+				pong := "+PONG\r\n"
+				(*conn).Write([]byte(pong))
+			} else if len(lines) == 6 { // get command
 				fmt.Println(lines[4])
 				var request entry.Request
 				cmd_bytes := []byte(lines[4])
-				jerr := json.Unmarshal(cmd_bytes, &request)
-				if jerr == nil {
-					fmt.Println(request.Id, request.Action, request.Params)
-					serviceUris := conf.GetConf()
-					fmt.Println(serviceUris, request.Action)
-					if confItem, ok := serviceUris[request.Action]; ok {
-						implClass := confItem.InterClass
-						fmt.Println(confItem, implClass)
-						mtv := reflect.ValueOf(implClass)
-						ret := mtv.MethodByName(request.Params.M).Call(nil)
-						resp := entry.Response{"1", 200, "success", ret}
-						ret_cmd, _ := json.Marshal(resp)
-						ret_cmd_str := string(ret_cmd)
-						redis_cmd := joinRedisCmd(ret_cmd_str)
-						fmt.Println(redis_cmd)
-						(*conn).Write([]byte(redis_cmd))
-					} else {
-						fmt.Println(request.Action + "not exists !")
-					}
+				json_err := json.Unmarshal(cmd_bytes, &request)
+				if json_err == nil {
+					ret := getReflectInvokeRet(request)
+					resp := entry.Response{"1", 200, "success", ret}
+					ret_cmd, _ := json.Marshal(resp)
+					redis_cmd := utils.MakeGetProtocal(string(ret_cmd))
+					(*conn).Write([]byte(redis_cmd))
 				} else {
-					fmt.Println(jerr)
+					fmt.Println(json_err)
 				}
-			} else if len(lines) == 2 {
+			} else if len(lines) == 2 && strings.EqualFold(lines[1], "QUIT") { // QUIT recommand
 
+			} else {
+				fmt.Println("command is error:", string(buf[:n]))
 			}
 		} else {
 			break
@@ -60,13 +47,34 @@ func HandleConnection(conn *net.Conn) {
 	}
 }
 
-func joinRedisCmd(resp string) string {
-	slen := len(resp)
-	lines := make([]string, 5, 5)
-	lines = append(lines, "$")
-	lines = append(lines, strconv.Itoa(slen))
-	lines = append(lines, "\r\n")
-	lines = append(lines, resp)
-	lines = append(lines, "\r\n")
-	return strings.Join(lines, "")
+func getReflectInvokeRet(request entry.Request) interface{} {
+	// get conf
+	serviceUris := conf.GetConf()
+	confItem, ok := serviceUris[request.Action]
+	if ok {
+		implClass := confItem.InterClass
+		mtv := reflect.ValueOf(implClass)
+		in := getArgs(request.Params.Args)
+		ret := mtv.MethodByName(request.Params.M).Call(in)
+		return ret
+	} else {
+		return nil
+	}
+}
+
+func getArgs(args []interface{}) []reflect.Value {
+	in := make([]reflect.Value, len(args))
+	for k, param := range args {
+		type_str := reflect.TypeOf(param).String()
+		fmt.Println(type_str)
+		if strings.EqualFold(type_str, "string") {
+			in[k] = reflect.ValueOf(param)
+		} else if strings.EqualFold(type_str, "float64") {
+			pv := reflect.ValueOf(param).Float()
+			in[k] = reflect.ValueOf(int(pv))
+		} else {
+			in[k] = reflect.ValueOf(param)
+		}
+	}
+	return in
 }
