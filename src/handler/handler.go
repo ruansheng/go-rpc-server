@@ -5,15 +5,20 @@ import (
 	"encoding/json"
 	"entry"
 	"fmt"
+	"log"
 	"net"
 	"reflect"
-	//	"strconv"
 	"strings"
 	"utils"
 )
 
 func HandleConnection(conn *net.Conn) {
 	defer (*conn).Close()
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Runtime error caught: %v", r)
+		}
+	}()
 	buf := make([]byte, 1024)
 	for {
 		n, err := (*conn).Read(buf)
@@ -35,12 +40,12 @@ func HandleConnection(conn *net.Conn) {
 					redis_cmd := utils.MakeGetProtocal(string(ret_cmd))
 					(*conn).Write([]byte(redis_cmd))
 				} else {
-					fmt.Println(json_err)
+					panic(json_err)
 				}
 			} else if len(lines) == 2 && strings.EqualFold(lines[0], "QUIT") { // QUIT recommand
-
+				panic("QUIT command")
 			} else {
-				fmt.Println("command is error:", string(buf[:n]))
+				panic("command is error:" + string(buf[:n]))
 			}
 		} else {
 			break
@@ -64,10 +69,10 @@ func getReflectInvokeRet(request entry.Request) interface{} {
 }
 
 func getArgs(args []interface{}) []reflect.Value {
+	fmt.Println(args)
 	in := make([]reflect.Value, len(args))
 	for k, param := range args {
 		in[k] = reflect.ValueOf(param)
-		fmt.Println(reflect.TypeOf(param))
 	}
 	return in
 }
