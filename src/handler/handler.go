@@ -29,6 +29,7 @@ func HandleConnection(conn *net.Conn) {
 				json_err := json.Unmarshal(cmd_bytes, &request)
 				if json_err == nil {
 					ret := getReflectInvokeRet(request)
+					fmt.Println(ret)
 					resp := entry.Response{"1", 200, "success", ret}
 					ret_cmd, _ := json.Marshal(resp)
 					redis_cmd := utils.MakeGetProtocal(string(ret_cmd))
@@ -36,7 +37,7 @@ func HandleConnection(conn *net.Conn) {
 				} else {
 					fmt.Println(json_err)
 				}
-			} else if len(lines) == 2 && strings.EqualFold(lines[1], "QUIT") { // QUIT recommand
+			} else if len(lines) == 2 && strings.EqualFold(lines[0], "QUIT") { // QUIT recommand
 
 			} else {
 				fmt.Println("command is error:", string(buf[:n]))
@@ -56,7 +57,7 @@ func getReflectInvokeRet(request entry.Request) interface{} {
 		mtv := reflect.ValueOf(implClass)
 		in := getArgs(request.Params.Args)
 		ret := mtv.MethodByName(request.Params.M).Call(in)
-		return ret
+		return ret[0].Interface()
 	} else {
 		return nil
 	}
@@ -65,16 +66,8 @@ func getReflectInvokeRet(request entry.Request) interface{} {
 func getArgs(args []interface{}) []reflect.Value {
 	in := make([]reflect.Value, len(args))
 	for k, param := range args {
-		type_str := reflect.TypeOf(param).String()
-		fmt.Println(type_str)
-		if strings.EqualFold(type_str, "string") {
-			in[k] = reflect.ValueOf(param)
-		} else if strings.EqualFold(type_str, "float64") {
-			pv := reflect.ValueOf(param).Float()
-			in[k] = reflect.ValueOf(int(pv))
-		} else {
-			in[k] = reflect.ValueOf(param)
-		}
+		in[k] = reflect.ValueOf(param)
+		fmt.Println(reflect.TypeOf(param))
 	}
 	return in
 }
