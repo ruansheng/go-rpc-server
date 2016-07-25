@@ -12,9 +12,8 @@ type Connector struct {
 	Port int
 }
 
-func (conn *Connector) Run(host string, port int) {
-	fmt.Println("Run")
-	server_conn, err := net.Listen("tcp", host+":"+strconv.Itoa(port))
+func (conn *Connector) Run() {
+	server_conn, err := net.Listen("tcp", conn.Host+":"+strconv.Itoa(conn.Port))
 	if err != nil {
 		fmt.Println(err)
 	}

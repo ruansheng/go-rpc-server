@@ -9,9 +9,9 @@ type Test struct {
 }
 
 type User struct {
-	Name string
-	Age  int
-	Sex  string
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+	Sex  string `json:"sex"`
 }
 
 func (test *Test) Show(name string, age float64, li []interface{}, price float64) {
