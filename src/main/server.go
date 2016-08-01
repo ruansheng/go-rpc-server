@@ -3,6 +3,8 @@ package main
 import (
 	"connector"
 	"flag"
+	"strconv"
+	"utils/logger"
 )
 
 const (
@@ -15,5 +17,6 @@ func main() {
 	portp := flag.Int("port", port, "input port desc")
 	flag.Parse()
 	conn := connector.Connector{*hostp, *portp}
+	logger.Write("INFO", "listening to "+*hostp+":"+strconv.Itoa(*portp))
 	conn.Run()
 }

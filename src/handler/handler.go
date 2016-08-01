@@ -5,18 +5,18 @@ import (
 	"encoding/json"
 	"entry"
 	"fmt"
-	"log"
 	"net"
 	"reflect"
 	"strings"
 	"utils"
+	"utils/logger"
 )
 
 func HandleConnection(conn *net.Conn) {
 	defer (*conn).Close()
 	defer func() {
 		if r := recover(); r != nil {
-			log.Printf("Runtime error caught: %v", r)
+			logger.Write("ERROR", r.(string))
 		}
 	}()
 	buf := make([]byte, 1024)
@@ -28,13 +28,13 @@ func HandleConnection(conn *net.Conn) {
 				pong := "+PONG\r\n"
 				(*conn).Write([]byte(pong))
 			} else if len(lines) == 6 { // get command
-				fmt.Println(lines[4])
+				logger.Write("INFO", lines[4])
 				var request entry.Request
 				cmd_bytes := []byte(lines[4])
 				json_err := json.Unmarshal(cmd_bytes, &request)
 				if json_err == nil {
 					ret := getReflectInvokeRet(request)
-					fmt.Println(ret)
+					logger.Write("INFO", ret.(string))
 					resp := entry.Response{"1", 200, "success", ret}
 					ret_cmd, _ := json.Marshal(resp)
 					redis_cmd := utils.MakeGetProtocal(string(ret_cmd))
