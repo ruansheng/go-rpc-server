@@ -1,7 +1,9 @@
 package impl
 
 import (
+	"encoding/json"
 	"fmt"
+	. "goconfig"
 )
 
 type Test struct {
@@ -31,4 +33,35 @@ func (test *Test) GetProfile1(uid string) User {
 	userinfo := User{"ruansheng", 25, "M"}
 	fmt.Println(userinfo)
 	return userinfo
+}
+
+func (test *Test) GetProfile2(uid string) User {
+	c, err := LoadConfigFile("conf.ini")
+	if err == nil {
+		fmt.Println(c)
+		port, _ := c.GetValue("", "port")
+		fmt.Println(port)
+		vInt, _ := c.Int("", "port")
+		fmt.Println(vInt)
+		invoke(vInt)
+	}
+	return userinfo
+}
+
+func getCmd(id string, action string, m string, args interface{}) string {
+	params := make(map[string]interface{})
+	params["m"] = m
+	params["args"] = args
+
+	cmd := make(map[string]interface{})
+	cmd["id"] = id
+	cmd["action"] = action
+	cmd["params"] = params
+
+	j, err := json.Marshal(cmd)
+	if err != nil {
+		panic()
+	}
+	js := string(j)
+	return js
 }
