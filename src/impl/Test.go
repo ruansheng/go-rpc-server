@@ -43,8 +43,10 @@ func (test *Test) GetProfile2(uid string) User {
 		fmt.Println(port)
 		vInt, _ := c.Int("", "port")
 		fmt.Println(vInt)
-		invoke(vInt)
+		//invoke(vInt)
 	}
+	userinfo := User{"ruansheng", 25, "M"}
+	fmt.Println(userinfo)
 	return userinfo
 }
 
@@ -60,7 +62,7 @@ func getCmd(id string, action string, m string, args interface{}) string {
 
 	j, err := json.Marshal(cmd)
 	if err != nil {
-		panic()
+		panic(err)
 	}
 	js := string(j)
 	return js
