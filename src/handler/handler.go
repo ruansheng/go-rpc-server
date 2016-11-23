@@ -34,7 +34,7 @@ func HandleConnection(conn *net.Conn) {
 				json_err := json.Unmarshal(cmd_bytes, &request)
 				if json_err == nil {
 					ret := getReflectInvokeRet(request)
-					logger.Write("INFO", ret.(string))
+					//logger.Write("INFO", ret.(string))
 					resp := entry.Response{"1", 200, "success", ret}
 					ret_cmd, _ := json.Marshal(resp)
 					redis_cmd := utils.MakeGetProtocal(string(ret_cmd))
