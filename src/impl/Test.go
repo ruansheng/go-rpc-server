@@ -1,9 +1,9 @@
 package impl
 
 import (
-	"encoding/json"
+	//"encoding/json"
 	"fmt"
-	. "goconfig"
+	//"utils/goconfig"
 )
 
 type Test struct {
@@ -20,6 +20,7 @@ func (test *Test) Show(name string, age float64, li []interface{}, price float64
 	fmt.Println("Test->Show:", name, age, li, price)
 }
 
+/*
 func (test *Test) GetProfile(uid string) map[string]interface{} {
 	userinfo := make(map[string]interface{})
 	userinfo["name"] = "ruansheng"
@@ -65,3 +66,4 @@ func getCmd(id string, action string, m string, args interface{}) string {
 	js := string(j)
 	return js
 }
+*/
