@@ -3,11 +3,7 @@ package impl
 import (
 	//"encoding/json"
 	"fmt"
-<<<<<<< HEAD
 	//"utils/goconfig"
-=======
-	. "utils/goconfig"
->>>>>>> 7075d80ef4698cf696cd881b603f45a5da9e9caf
 )
 
 type Test struct {

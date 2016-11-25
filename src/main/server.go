@@ -2,49 +2,64 @@ package main
 
 import (
 	"connector"
+	. "entry"
 	"flag"
 	"fmt"
 	"strconv"
-	//	"strings"
 	"utils/goconfig"
 	"utils/logger"
 )
 
 const (
-	host   = "127.0.0.1"
-	port   = 8080
-	config = ""
+	HOST       = "127.0.0.1"
+	PORT       = 8080
+	CONFIGFILE = ""
+	LOGFILE    = "./go-rpc-server.log"
 )
 
 func main() {
-	hostp := flag.String("host", host, "input host")
-	portp := flag.Int("port", port, "input port")
-	configp := flag.String("config", config, "input config")
-	flag.Parse()
+	ctx := getCtx()
+	conn := connector.Connector{ctx.GetHost(), ctx.GetPort()}
 
-	// 配置文件优先
-	if *configp != "" {
-		chost, cport := getHostAndPort(*configp)
-		fmt.Println(chost, cport)
-		if chost != "" && cport != 0 {
-			*hostp = chost
-			*portp = cport
-		}
-	}
-
-	conn := connector.Connector{*hostp, *portp}
-	logger.Write("INFO", "listening to "+*hostp+":"+strconv.Itoa(*portp))
+	logline := fmt.Sprintf("listening to %s:%s", ctx.GetHost(), strconv.Itoa(ctx.GetPort()))
+	logger.Write("INFO", logline)
+	fmt.Println(logline)
 	conn.Run()
 }
 
-func getHostAndPort(file string) (string, int) {
-	c, err := goconfig.LoadConfigFile(file)
-	if err == nil {
-		host, err1 := c.GetValue("", "host")
-		port, err2 := c.Int("", "port")
-		if err1 == nil && err2 == nil {
-			return host, port
+func getCtx() Ctx {
+	ctx := new(Ctx)
+	hostp := flag.String("host", HOST, "input host")
+	portp := flag.Int("port", PORT, "input port")
+	configfilep := flag.String("config", CONFIGFILE, "input config file")
+	flag.Parse()
+
+	host := *hostp
+	port := *portp
+	configfile := *configfilep
+	logfile := LOGFILE
+
+	// 配置文件优先
+	if configfile != "" {
+		c, err := goconfig.LoadConfigFile(configfile)
+		if err == nil {
+			hostc, err1 := c.GetValue("", "host")
+			portc, err2 := c.Int("", "port")
+			logfilec, err3 := c.GetValue("", "logfile")
+			if err1 == nil {
+				host = hostc
+			}
+			if err2 == nil {
+				port = portc
+			}
+			if err3 == nil {
+				logfile = logfilec
+			}
 		}
 	}
-	return "", 0
+	ctx.SetHost(host)
+	ctx.SetPort(port)
+	ctx.SetConfigFile(configfile)
+	ctx.SetLogFile(logfile)
+	return ctx
 }
