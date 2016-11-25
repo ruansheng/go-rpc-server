@@ -12,7 +12,7 @@ import (
 	"utils/logger"
 )
 
-func HandleConnection(conn *net.Conn) {
+func HandleConnection(conn *net.Conn, ctx *entry.Context) {
 	defer (*conn).Close()
 	defer func() {
 		if r := recover(); r != nil {

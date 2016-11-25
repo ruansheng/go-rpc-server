@@ -1,6 +1,7 @@
 package connector
 
 import (
+	. "entry"
 	"fmt"
 	"handler"
 	"net"
@@ -9,12 +10,11 @@ import (
 )
 
 type Connector struct {
-	Host string
-	Port int
+	Ctx *Context
 }
 
 func (conn *Connector) Run() {
-	server_conn, err := net.Listen("tcp", conn.Host+":"+strconv.Itoa(conn.Port))
+	server_conn, err := net.Listen("tcp", conn.Ctx.GetHost()+":"+strconv.Itoa(conn.Ctx.GetPort()))
 	if err != nil {
 		fmt.Println(err)
 		logger.Write("ERROR", err.Error())
@@ -25,6 +25,6 @@ func (conn *Connector) Run() {
 			logger.Write("ERROR", err.Error())
 			continue
 		}
-		go handler.HandleConnection(&client_conn)
+		go handler.HandleConnection(&client_conn, conn.Ctx)
 	}
 }

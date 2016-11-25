@@ -5,7 +5,10 @@ import (
 	. "entry"
 	"flag"
 	"fmt"
+	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"utils/goconfig"
 	"utils/logger"
 )
@@ -19,16 +22,31 @@ const (
 
 func main() {
 	ctx := getCtx()
-	conn := connector.Connector{ctx.GetHost(), ctx.GetPort()}
+	conn := connector.Connector{ctx}
 
 	logline := fmt.Sprintf("listening to %s:%s", ctx.GetHost(), strconv.Itoa(ctx.GetPort()))
 	logger.Write("INFO", logline)
 	fmt.Println(logline)
+
+	go signalListen(ctx)
+
 	conn.Run()
 }
 
-func getCtx() Ctx {
-	ctx := new(Ctx)
+func signalListen(ctx *Context) {
+	c := make(chan os.Signal)
+	signal.Notify(c, syscall.SIGUSR2)
+	for {
+		s := <-c
+		if s == syscall.SIGUSR2 {
+			//重新加载配置文件
+			fmt.Println("signal:", ctx.GetConfigFile())
+		}
+	}
+}
+
+func getCtx() *Context {
+	ctx := new(Context)
 	hostp := flag.String("host", HOST, "input host")
 	portp := flag.Int("port", PORT, "input port")
 	configfilep := flag.String("config", CONFIGFILE, "input config file")
