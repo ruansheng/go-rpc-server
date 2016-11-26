@@ -12,7 +12,12 @@ import (
 	"utils/logger"
 )
 
-func HandleConnection(conn *net.Conn, ctx *entry.Context) {
+type Handler struct {
+	Ctx *entry.Context
+}
+
+func (h *Handler) HandleConnection(conn *net.Conn) {
+	fmt.Println("config file:", h.Ctx.GetLogFile())
 	defer (*conn).Close()
 	defer func() {
 		if r := recover(); r != nil {

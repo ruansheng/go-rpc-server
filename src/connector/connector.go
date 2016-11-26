@@ -19,12 +19,13 @@ func (conn *Connector) Run() {
 		fmt.Println(err)
 		logger.Write("ERROR", err.Error())
 	}
+	h := handler.Handler{conn.Ctx}
 	for {
 		client_conn, err := server_conn.Accept()
 		if err != nil {
 			logger.Write("ERROR", err.Error())
 			continue
 		}
-		go handler.HandleConnection(&client_conn, conn.Ctx)
+		go h.HandleConnection(&client_conn)
 	}
 }

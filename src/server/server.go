@@ -37,10 +37,11 @@ func signalListen(ctx *Context) {
 	c := make(chan os.Signal)
 	signal.Notify(c, syscall.SIGUSR2)
 	for {
+		fmt.Println("listen signal")
 		s := <-c
 		if s == syscall.SIGUSR2 {
 			//重新加载配置文件
-			fmt.Println("signal:", ctx.GetConfigFile())
+			LoadConfigFile(ctx)
 		}
 	}
 }
@@ -55,29 +56,35 @@ func getCtx() *Context {
 	host := *hostp
 	port := *portp
 	configfile := *configfilep
-	logfile := LOGFILE
 
+	ctx.SetHost(host)
+	ctx.SetPort(port)
+	ctx.SetConfigFile(configfile)
+	ctx.SetLogFile(LOGFILE)
+
+	//加载配置文件
+	LoadConfigFile(ctx)
+	return ctx
+}
+
+func LoadConfigFile(ctx *Context) {
+	configfile := ctx.GetConfigFile()
 	// 配置文件优先
 	if configfile != "" {
 		c, err := goconfig.LoadConfigFile(configfile)
 		if err == nil {
-			hostc, err1 := c.GetValue("", "host")
-			portc, err2 := c.Int("", "port")
-			logfilec, err3 := c.GetValue("", "logfile")
+			host, err1 := c.GetValue("", "host")
+			port, err2 := c.Int("", "port")
+			logfile, err3 := c.GetValue("", "logfile")
 			if err1 == nil {
-				host = hostc
+				ctx.SetHost(host)
 			}
 			if err2 == nil {
-				port = portc
+				ctx.SetPort(port)
 			}
 			if err3 == nil {
-				logfile = logfilec
+				ctx.SetLogFile(logfile)
 			}
 		}
 	}
-	ctx.SetHost(host)
-	ctx.SetPort(port)
-	ctx.SetConfigFile(configfile)
-	ctx.SetLogFile(logfile)
-	return ctx
 }

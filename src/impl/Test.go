@@ -29,6 +29,7 @@ func (test *Test) GetProfile(uid string) map[string]interface{} {
 	fmt.Println(userinfo)
 	return userinfo
 }
+*/
 
 func (test *Test) GetProfile1(uid string) User {
 	userinfo := User{"ruansheng", 25, "M"}
@@ -36,6 +37,7 @@ func (test *Test) GetProfile1(uid string) User {
 	return userinfo
 }
 
+/*
 func (test *Test) GetProfile2(uid string) User {
 	c, err := LoadConfigFile("conf.ini")
 	if err == nil {
